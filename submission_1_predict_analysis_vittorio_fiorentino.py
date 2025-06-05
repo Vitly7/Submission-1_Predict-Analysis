@@ -12,9 +12,6 @@ Original file is located at
 """
 
 # Commented out IPython magic to ensure Python compatibility.
-!pip install yfinance
-import yfinance as yf
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -33,166 +30,282 @@ from sklearn.ensemble import AdaBoostRegressor
 
 """##Load Dataset"""
 
-df = yf.download("ADRO.JK", start="2020-01-01", end="2025-01-01")
+url='https://drive.google.com/uc?id=1JnHqcZDejRC0Bdei0VlpeiHyf9PvG3cz'
+house = pd.read_csv(url)
+house
 
-# Ubah multi-level columns jadi single-level
-df.columns = df.columns.get_level_values(0)
+"""### Dataset House
 
+Dataset ini diambil dari Url Github yaitu kc_house_data.csv. Dataset berisi informasi mengenai spesifikasi properti beserta harga.
 
-# Lihat hasilnya
-df.head()
-
-"""##EDA"""
-
-df.info()
-
-"""Data Berisi type data numerik"""
-
-df.describe()
-
-"""Terlihat data volume memiliki nilai minimum 0 yang seharusnya tidak ada.
-
-###Drop Missing Value
+##EDA
 """
 
-volume = (df.Volume == 0).sum()
-print(volume)
+house.info()
 
-df.loc[(df['Volume']==0)]
+"""### Struktur Data
 
-# Drop baris dengan nilai 'Volume' = 0
-df = df.loc[(df[['Volume']]!=0).all(axis=1)]
+- Tidak ada missing Value
+- Semua kolom bertipe Numeric (Kolom Date harusnya bertipe datetime)
+
+### Insight
+
+- Kita akan berfokus pada beberapa kolom variabel saja, sehingga variable yang tidak perlu akan di drop.
+
+
+| Kolom           | Tipe    | Penjelasan                                                              |
+| --------------- | ------- | ----------------------------------------------------------------------- |
+| `id`            | int64   | ID unik tiap rumah                                                      |
+| `date`          | object  | Tanggal penjualan rumah                                                 |
+| `price`         | float64 | Harga jual rumah (ini yang akan diprediksi)                             |
+| `bedrooms`      | int64   | Jumlah kamar tidur                                                      |
+| `bathrooms`     | float64 | Jumlah kamar mandi (bisa desimal, misal 1.5 = 1 kamar mandi + 1 toilet) |
+| `sqft_living`   | int64   | Luas bangunan utama dalam square feet (kaki persegi)                    |
+| `sqft_lot`      | int64   | Luas tanah                                                              |
+| `floors`        | float64 | Jumlah lantai rumah                                                     |
+| `waterfront`    | int64   | 1 jika rumah menghadap air (danau/laut), 0 jika tidak                   |
+| `view`          | int64   | Skor tampilan (0–4), makin tinggi makin bagus                           |
+| `condition`     | int64   | Skor kondisi rumah (1–5), makin tinggi makin bagus                      |
+| `grade`         | int64   | Skor kualitas konstruksi & desain (1–13)                                |
+| `sqft_above`    | int64   | Luas bangunan di atas tanah (tanpa basement)                            |
+| `sqft_basement` | int64   | Luas basement                                                           |
+| `yr_built`      | int64   | Tahun rumah dibangun                                                    |
+| `yr_renovated`  | int64   | Tahun rumah direnovasi (0 jika belum pernah direnovasi)                 |
+| `zipcode`       | int64   | Kode pos                                                                |
+| `lat`           | float64 | Koordinat lintang (latitude) rumah                                      |
+| `long`          | float64 | Koordinat bujur (longitude) rumah                                       |
+| `sqft_living15` | int64   | Luas bangunan rata-rata rumah tetangga dalam radius 15 rumah            |
+| `sqft_lot15`    | int64   | Luas tanah rata-rata rumah tetangga dalam radius 15 rumah               |
+
+### Perkecil Scope Variable Dataset
+
+- Hal ini bertujuan untuk menyederhanakan model dan menghindari overfitting.
+"""
+
+house = house.drop(['id', 'date', 'zipcode', 'view', 'lat', 'long', 'sqft_basement', 'sqft_lot', 'sqft_lot15', 'sqft_above', 'sqft_living15'], axis=1)
+
+house.head()
+
+house.describe()
+
+"""#### Insight:
+
+- Kolom bedrooms dan bathrooms memiliki data bernilai 0. Sedikit ambigu jika rumah tidak punya bedrooms dan bathrooms. Tapi bisa saja memang ada.
+
+### Handling Missing Value
+"""
+
+bedrooms = (house.bedrooms == 0).sum()
+print(bedrooms)
+
+"""Bedrooms yang bernilai 0 memiliki 13 baris."""
+
+house.loc[(house['bedrooms']==0)]
+
+"""Dari hasil ini bisa dilihat memang anomali karena grade rumah termasuk mayoritas tinggi. Sehingga data ini akan dibuang/drop"""
+
+# Drop baris dengan nilai 'Bedrooms' = 0
+house = house.loc[(house[['bedrooms']]!=0).all(axis=1)]
 
 # Cek ukuran data untuk memastikan baris sudah di-drop
-df.shape
+house.shape
 
-"""Penghapusan data yang bernilai 0"""
+bathrooms = (house.bathrooms == 0).sum()
+print(bathrooms)
 
-df.describe()
+"""Bathrooms yang bernilai 0 memiliki 3 baris"""
 
-"""###Mengatasi Outliers"""
+house.loc[(house['bathrooms']==0)]
 
-# Buat plot untuk semua kolom numerik
-numerical_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+"""Dari hasil ini bisa dilihat meskipun bathrooms, tetapi masih ada bedrooms. Jika dilihat dari yr_built kisaran 1948-1966 yang dimana termasuk sudah tua dengan grade yang normal.
 
-plt.figure(figsize=(15, 8))
+- Dapat disimpulkan data ini termasuk norma, sehingga tetap akan digunakan
+
+### Handling Outliers
+"""
+
+numerical_cols = ['price','bedrooms','bathrooms','sqft_living','floors']
+
+plt.figure(figsize=(14, 14))  # lebih lebar
 for i, col in enumerate(numerical_cols):
-    plt.subplot(2, 3, i+1)
-    sns.boxplot(y=df[col])
+    plt.subplot(3, 2, i + 1)
+    sns.boxplot(y=house[col])
     plt.title(f'Boxplot of {col}')
 plt.tight_layout()
 plt.show()
 
-"""Hasil Visual BoxPlot memperlihatkan bahwa bagian Volume memiliki Outliers"""
+"""Penjelasan BoxPlot:
 
-# Hitung Q1, Q3, dan IQR khusus untuk kolom 'Volume'
-Q1 = df['Volume'].quantile(0.25)
-Q3 = df['Volume'].quantile(0.75)
-IQR = Q3 - Q1
+1. bathrooms
+Boxplot: Terlihat banyak outlier di atas (hingga 8 kamar mandi). Rumah dengan lebih dari 4–5 kamar mandi itu jarang dan bisa dikategorikan outlier.
 
-# Buat filter untuk mendeteksi data yang tidak outlier
-filter_outliers = ~((df['Volume'] < (Q1 - 1.5 * IQR)) | (df['Volume'] > (Q3 + 1.5 * IQR)))
+2. sqft_living
+Boxplot: Outlier ekstrem sangat banyak di sisi atas (hingga >13.000 sqft). Rumah dengan luas >8000 sqft adalah mansion dan sangat tidak umum, bisa mendistorsi model.
 
-# Terapkan filter ke seluruh dataset
-df_cleaned = df[filter_outliers]
+3. floors
+Boxplot: Hampir tidak ada outlier. Rentang antara 1 hingga 3.5 lantai, distribusinya cukup stabil.
 
-# Cek ukuran dataset setelah outlier Volume dihapus
-print(df_cleaned.shape)
+4.  bedrooms
+Boxplot: Outlier bisa terjadi untuk rumah dengan 33 kamar tidur.
 
-"""Data Volume yang bernilai outlier dihapus agar data bisa di proses lebih lanjut.
+5. price
+Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
+"""
 
-###Univariate Analysis
+def winsorize_iqr_df(house, columns):
+    house_winsorized = house.copy()  # salin dataframe supaya data asli aman
+
+    for col in columns:
+        Q1 = house[col].quantile(0.25)
+        Q3 = house[col].quantile(0.75)
+        IQR = Q3 - Q1
+
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        house_winsorized[col] = np.where(
+            house[col] < lower_bound, lower_bound,
+            np.where(house[col] > upper_bound, upper_bound, house[col])
+        )
+    return house_winsorized
+
+# Misalnya kolom yang mau di-winsorize:
+num_cols = ['bathrooms', 'sqft_living', 'bedrooms']
+
+# Terapkan winsorization ke dataframe house
+house_winsorized = winsorize_iqr_df(house, num_cols)
+
+# Buat boxplot untuk kolom 'bathrooms', 'sqft_living', dan 'bedrooms'
+plt.figure(figsize=(12, 6))
+
+# Boxplot bathrooms
+plt.subplot(1, 3, 1)
+sns.boxplot(y=house['bathrooms'])
+plt.title('Boxplot Bathrooms')
+
+# Boxplot sqft_living
+plt.subplot(1, 3, 2)
+sns.boxplot(y=house['sqft_living'])
+plt.title('Boxplot Sqft Living')
+
+# Boxplot bedrooms
+plt.subplot(1, 3, 3)
+sns.boxplot(y=house['bedrooms'])
+plt.title('Boxplot Bedrooms')
+
+plt.tight_layout()
+plt.show()
+
+house_winsorized.info()
+
+house_winsorized.describe()
+
+# Membuat kategori bins untuk sqft_living
+
+# Agregasi rata-rata harga berdasarkan kategori luas rumah
+df_agg = house_winsorized.groupby('sqft_living').agg({'price': 'mean'}).reset_index()
+
+plt.figure(figsize=(12,6))
+plt.title("Rata-rata Harga Rumah Berdasarkan Rentang Luas Rumah")
+sns.barplot(x='sqft_living', y='price', data=df_agg)
+plt.xlabel("Rentang Luas Rumah (sqft)")
+plt.ylabel("Rata-rata Harga Rumah (Price)")
+plt.show()
+
+"""Berdasarkan hasil visualisasi, berikut adalah beberapa insight yang bisa didapatkan:
+
+- Distribusi Harga Jual Berdasarkan Luas Rumah: Bar chart menunjukkan harga jual ('selling_price') untuk berbagai kategori luas rumah ('sqft_living'). Sumbu X adalah luas rumah dan sumbu Y adalah harga jual.
+
+- Kategori dengan Harga Jual Terendah: Range 0-1000
+
+- Kategori dengan Harga Jual Tertinggi: Range 4001+
+
+- Tren Peningkatan Harga Jual: Terlihat jelas ada tren peningkatan harga jual dari kiri ke kanan.
+
+### Multivariate Analysis
 """
 
 # Kolom numerik
-numerical_cols = df_cleaned.select_dtypes(include=['int64', 'float64']).columns
-
-# Kolom kategorikal (termasuk object dan datetime)
-categorical_cols = df_cleaned.select_dtypes(include=['object', 'category', 'datetime']).columns
+numerical_cols = house_winsorized.select_dtypes(include=['int64', 'float64']).columns
 
 print("Fitur numerik:", list(numerical_cols))
-print("Fitur kategorikal:", list(categorical_cols))
 
-"""Karena data bertype numerik semua, sehingga tidak ada analisis Category
-
-####Numerical Features
-"""
-
-df.hist(bins=50, figsize=(20,15))
-plt.show()
-
-"""###Multivariate Analysis
-
-####Numerical Features
-"""
+"""#### Numerical Features"""
 
 # Mengamati hubungan antar fitur numerik dengan fungsi pairplot()
-sns.pairplot(df, diag_kind = 'kde')
+sns.pairplot(house_winsorized, diag_kind = 'kde')
 
 plt.figure(figsize=(10, 8))
-correlation_matrix = df[numerical_cols].corr().round(2)
+correlation_matrix = house_winsorized[numerical_cols].corr().round(2)
 
 # Untuk menge-print nilai di dalam kotak, gunakan parameter anot=True
 sns.heatmap(data=correlation_matrix, annot=True, cmap='coolwarm', linewidths=0.5, )
 plt.title("Correlation Matrix untuk Fitur Numerik ", size=20)
 
-"""Dari hasil Correlation Matrix menunjukkan bahwa Volume jauh dari korelasi, sehingga akan dibuang."""
+"""Penjelasan Correlation Matrix:
 
-df.drop(['Volume'], inplace=True, axis=1)
-df.head()
+🔺 grade (0.67) dan sqft_living (0.65) punya korelasi paling kuat dengan price → makin tinggi kualitas & luas rumah, makin mahal harganya.
 
-"""#Data Preparation
+🛁 bathrooms (0.48) dan 🛏️ bedrooms (0.32) juga cukup berpengaruh terhadap price, tapi tidak sekuat grade.
 
-##Reduksi Dimensi Dengan PCA
+🚫 condition (0.04) dan yr_built (0.05) hampir tidak berkorelasi dengan price → usia atau kondisi rumah tidak terlalu memengaruhi harga.
+
+💡 Korelasi antar fitur juga terlihat kuat antara:
+
+- bathrooms & sqft_living (0.75)
+
+- grade & sqft_living (0.76)
+
+#Data Preparation
 """
 
-sns.pairplot(df[['Close','High','Low','Open']], plot_kws={"s": 4});
+house = house_winsorized.copy()
 
-# Ambil fitur
-features = ['Close', 'High', 'Low', 'Open']
-X = df[features]
+"""Setelah proses Winsorization selesai, dataset yang telah dibersihkan disimpan kembali ke variabel utama, yaitu house. Hal ini bertujuan agar proses preprocessing selanjutnya tetap menggunakan data yang sudah bebas dari nilai ekstrem.
 
-# Standardisasi
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+## Reduksi Dimensi dengan PCA
+"""
 
-# PCA setelah standardisasi
-pca = PCA(n_components=4, random_state=123)
-princ_comp = pca.fit_transform(X_scaled)
+sns.pairplot(house[['grade','waterfront','condition','yr_renovated']], plot_kws={"s": 4});
 
-pca.explained_variance_ratio_.round(5)
+pca = PCA(n_components=2, random_state=123)
+pca.fit(house[['waterfront','condition']])
+princ_comp = pca.transform(house[['waterfront','condition',]])
+
+pca.explained_variance_ratio_.round(3)
+
+pca = PCA(n_components=1, random_state=123)
+pca.fit(house[['waterfront','condition']])
+house['dimension'] = pca.transform(house.loc[:, ('waterfront','condition')]).flatten()
+house.drop(['waterfront','condition'], axis=1, inplace=True)
 
 """##Train Test Split"""
 
-# Misalnya df adalah DataFrame kamu
-X = df[['Open', 'High', 'Low']]  # fitur (tanpa 'Close')
-y = df['Close']  # target
+X = house.drop(["price"],axis =1)
+y = house["price"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, random_state = 123)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y,
-    test_size=0.1,      # 10% data untuk pengujian
-    random_state=123    # supaya split-nya konsisten
-)
+"""Split Data:
 
-"""Split Data: 90:10
+Training 90 : Test 10
 
-Fitur: Open, High, Low
-Target: Close
+
 """
 
 print(f'Total # of sample in whole dataset: {len(X)}')
 print(f'Total # of sample in train dataset: {len(X_train)}')
 print(f'Total # of sample in test dataset: {len(X_test)}')
 
-"""##Standarisasi"""
+"""##Standarisasi Numeric"""
 
-numerical_cols = ['Open', 'High', 'Low']
 scaler = StandardScaler()
-scaler.fit(X_train[numerical_cols])
-X_train[numerical_cols] = scaler.transform(X_train.loc[:, numerical_cols])
-X_train[numerical_cols].head()
 
-X_train[numerical_cols].describe().round(4)
+numerical_features = ['bedrooms', 'bathrooms', 'sqft_living', 'floors', 'yr_built','grade','yr_renovated']
+scaler.fit(X_train[numerical_features])
+X_train[numerical_features] = scaler.transform(X_train.loc[:, numerical_features])
+X_train[numerical_features].head()
+
+X_train[numerical_features].describe()
 
 """#Model Deployment"""
 
@@ -229,7 +342,7 @@ models.loc['train_mse','Boosting'] = mean_squared_error(y_pred=boosting.predict(
 """##Scaling Pada Data Uji"""
 
 # Lakukan scaling terhadap fitur numerik pada X_test sehingga memiliki rata-rata=0 dan varians=1
-X_test.loc[:, numerical_cols] = scaler.transform(X_test[numerical_cols])
+X_test.loc[:, numerical_features] = scaler.transform(X_test[numerical_features])
 
 """#Evaluasi Model"""
 
@@ -269,10 +382,10 @@ pd.DataFrame(pred_dict)
 
 """Evaluasi Akurasi Prediksi:
 
-Hasil Asli = 1336.7
-- KNN	1339.1 	 ->	Cukup dekat
-- RandomForest	1337.5	 ->	Paling akurat
-- Boosting	1304.0	 ->	Jauh lebih rendah dari aslinya
+Hasil Asli = 270000
+- KNN	334973 	 ->	Cukup dekat
+- RandomForest	324502.9	 ->	Paling dekat
+- Boosting	383839.0	 ->	Cukup jauh dari aslinya
 
 ###Kesimpulan:
 - Semua model cukup baik kali ini, terutama Random Forest yang prediksinya hampir identik dengan nilai sebenarnya.
