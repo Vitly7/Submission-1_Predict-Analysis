@@ -5,9 +5,9 @@
 
 ## Domain Proyek
 
-Pergerakan harga saham menjadi aspek penting dalam dunia keuangan, baik bagi investor individu maupun institusional. Dalam era digital saat ini, prediksi harga saham berbasis data menjadi semakin diminati karena mampu memberikan insight untuk pengambilan keputusan yang lebih akurat. Dengan meningkatnya volume data keuangan dan kemampuan komputasi, pemanfaatan machine learning untuk menganalisis pola harga saham menjadi solusi potensial yang efektif dan efisien.
+Pergerakan harga properti atau rumah merupakan aspek penting dalam dunia real estat, baik bagi pembeli, penjual, maupun investor. Dalam era digital dan data-driven saat ini, prediksi harga rumah berbasis data historis menjadi pendekatan yang sangat diminati karena mampu memberikan wawasan yang lebih akurat dalam pengambilan keputusan jual beli atau investasi.
 
-Menurut [Fischer & Krauss, 2018], model deep learning seperti LSTM dapat mengalahkan model tradisional dalam prediksi harga saham harian. Hal ini memperkuat urgensi dan relevansi topik ini dalam konteks bisnis dan teknologi modern.
+Dengan meningkatnya ketersediaan data properti (seperti ukuran rumah, lokasi, jumlah kamar, dan tahun pembangunan), serta kemajuan teknologi machine learning, analisis prediktif harga rumah menjadi solusi yang efektif dan efisien dalam memahami tren pasar properti.
 
 
 ---
@@ -16,20 +16,30 @@ Menurut [Fischer & Krauss, 2018], model deep learning seperti LSTM dapat mengala
 
 ### Problem Statements
 
-1. Bagaimana memprediksi harga penutupan saham berdasarkan data historis harga saham?
-2. Model machine learning mana yang memberikan performa terbaik dalam memprediksi harga saham?
+1. Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
+
+2. Model machine learning mana yang memberikan performa terbaik dalam memprediksi harga rumah?
 
 ### Goals
 
-1. Menghasilkan model yang mampu memprediksi harga saham berdasarkan fitur-fitur seperti Open, High, Low, dan Volume.
-2. Membandingkan beberapa algoritma machine learning untuk mengetahui performa terbaik.
+1. Menghasilkan model prediktif yang mampu memperkirakan harga rumah berdasarkan fitur-fitur seperti luas bangunan, jumlah kamar, lokasi, kondisi, dan lainnya.
+
+2. Membandingkan performa beberapa algoritma machine learning untuk menentukan model terbaik dalam memprediksi harga rumah.
 
 ### Solution Statement
 
 Untuk mencapai tujuan di atas, digunakan tiga algoritma machine learning, yaitu:
 - K-Nearest Neighbors (KNN)
+
+Digunakan untuk memprediksi harga rumah berdasarkan kedekatan fitur rumah lain dengan harga yang telah diketahui.
+
 - Random Forest (RF)
+
+Model ensemble berbasis pohon keputusan yang dapat menangani data kompleks dan memberikan hasil prediksi yang stabil.
+
 - Gradient Boosting
+
+Model boosting yang secara bertahap memperbaiki kesalahan prediksi dari model sebelumnya untuk meningkatkan akurasi.
 
 Evaluasi model dilakukan menggunakan Root Mean Squared Error (RMSE) pada data pelatihan dan pengujian.
 
@@ -38,7 +48,7 @@ Evaluasi model dilakukan menggunakan Root Mean Squared Error (RMSE) pada data pe
 
 ## Data Understanding
 Dataset diperoleh dari kaggle/Github (Sudah disimpan ke gdrive)= 'https://drive.google.com/uc?id=1JnHqcZDejRC0Bdei0VlpeiHyf9PvG3cz'
-Dataset yang digunakan merupakan data harga saham historis dengan atribut:
+Dataset yang digunakan merupakan data rumah/properti historis dengan atribut:
 - Jumlah baris = 21613 baris
 - Jumlah kolom = 21 kolom
 - Tidak ada missing Value
@@ -48,10 +58,14 @@ Dataset yang digunakan merupakan data harga saham historis dengan atribut:
 
 ### Exploratory Data Analysis (EDA)
 
-Untuk memahami karakteristik dasar dari dataset harga saham yang digunakan, dilakukan analisis statistik deskriptif terhadap fitur-fitur numerik.
+Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan analisis statistik deskriptif terhadap fitur-fitur numerik.
 
 - Memperkecil scope variabel pada dataset untuk menyederhanakan model dan menghindari overfitting.
 - Menangani Outlier
+
+**Handling Outliers**
+
+![ss4]()
 
 Penjelasan BoxPlot:
 
@@ -64,6 +78,29 @@ Penjelasan BoxPlot:
 - bedrooms Boxplot: Outlier bisa terjadi untuk rumah dengan 33 kamar tidur.
 
 - price Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
+
+
+**Agregasi rata-rata harga berdasarkan kategori luas rumah**
+
+![ss4]()
+
+Berdasarkan hasil visualisasi, berikut adalah beberapa insight yang bisa didapatkan:
+
+Distribusi Harga Jual Berdasarkan Luas Rumah: Bar chart menunjukkan harga jual ('selling_price') untuk berbagai kategori luas rumah ('sqft_living'). Sumbu X adalah luas rumah dan sumbu Y adalah harga jual.
+
+Kategori dengan Harga Jual Terendah: Range 0-1000
+
+Kategori dengan Harga Jual Tertinggi: Range 4001+
+
+Tren Peningkatan Harga Jual: Terlihat jelas ada tren peningkatan harga jual dari kiri ke kanan.
+
+#### Multivariate Analysis
+
+**Variabel Fitur Numerik yang dipakai untuk analisis**
+
+Fitur numerik: ['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors', 'waterfront', 'condition', 'grade', 'yr_built', 'yr_renovated']
+
+![ss4]()
 
 Penjelasan Correlation Matrix:
 
@@ -84,6 +121,12 @@ Penjelasan Correlation Matrix:
 ## Data Preparation
 
 - Reduksi dimensi dengan PCA
+
+Reduksi dimensi berfungsi untuk mengurangi dimensi data, meningkatkan performa model, mempermudah visualisasi
+Hasil reduksi ratio 
+array([0.983, 0.017])
+
+
 - Train Test Split: Membagi data menjadi data latih dan data uji dengan rasio 90:10
 Total of sample in whole dataset: 21600
 
@@ -92,6 +135,16 @@ Total of sample in train dataset: 19440
 Total of sample in test dataset: 2160
 
 - Standarisasi Numeric
+
+            bedrooms	bathrooms	    sqft_living	        floors	       yr_built	       grade        yr_renovated
+count   1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04
+mean	4.070818e-17	-6.517420e-17	-1.798972e-16	7.360367e-17	2.872599e-15	5.304399e-17	5.345518e-18
+std	    1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00
+min	    -2.183627e+00	-2.036927e+00	-2.007164e+00	-9.080882e-01	-2.419629e+00	-3.960760e+00	-2.147758e-01
+25% 	-4.251651e-01	-8.240421e-01	-7.578735e-01	-9.080882e-01	-6.788543e-01	-5.557311e-01	-2.147758e-01
+50%	    -4.251651e-01	2.155739e-01	-1.748714e-01	1.713374e-02	1.403338e-01	-5.557311e-01	-2.147758e-01
+75%	    7.471426e-01	5.621126e-01	5.866007e-01	9.423557e-01	8.912561e-01	2.955262e-01	-2.147758e-01
+max	    2.505604e+00	2.121537e+00	2.586804e+00	3.718022e+00	1.505647e+00	4.551812e+00	4.701859e+00
 
 ---
 
@@ -109,18 +162,17 @@ Tiga model machine learning yang digunakan:
 | Boosting  | 52643899.971604	 | 57222556.944881  |
 
 
+**Lakukan scaling terhadap fitur numerik pada X_test sehingga memiliki rata-rata=0 dan varians=1**
 
-**Analisis:**
-
-- Boosting ~5.4 ~4.4 Overfitting terlihat → error train & test cukup besar tapi tidak seimbang. Boosting cenderung fit terlalu dalam ke data latih.
-- KNN ~0.26 ~0.22 Cukup stabil → train dan test error mirip → model tidak overfit atau underfit.
-- RF ~0.04 ~0.2 Sangat baik → performa sangat bagus di train dan cukup baik di test. Hampir tidak overfit.
+X_test.loc[:, numerical_features] = scaler.transform(X_test[numerical_features])
 
 ---
 
 ## Evaluation
 
 ### Metrik Evaluasi
+
+![ss4]()
 Penjelasan:
 
 - Boosting ~5.4 ~4.4 Overfitting terlihat → error train & test cukup besar tapi tidak seimbang. Boosting cenderung fit terlalu dalam ke data latih.
@@ -133,7 +185,8 @@ Penjelasan:
 | 	            |                |              |                   |   
 |   270000.0    |   318473.2     |   320560.6   |    382082.5       |
 
-Evaluasi Akurasi Prediksi:
+
+**Evaluasi Akurasi Prediksi:**
 
 Hasil Asli = 270000
 
