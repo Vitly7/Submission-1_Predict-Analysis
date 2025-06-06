@@ -65,7 +65,7 @@ Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan 
 
 **Handling Outliers**
 
-![ss4]()
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/boxplot.png)
 
 Penjelasan BoxPlot:
 
@@ -82,7 +82,7 @@ Penjelasan BoxPlot:
 
 **Agregasi rata-rata harga berdasarkan kategori luas rumah**
 
-![ss4]()
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/agregasi.png)
 
 Berdasarkan hasil visualisasi, berikut adalah beberapa insight yang bisa didapatkan:
 
@@ -100,7 +100,7 @@ Tren Peningkatan Harga Jual: Terlihat jelas ada tren peningkatan harga jual dari
 
 Fitur numerik: ['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors', 'waterfront', 'condition', 'grade', 'yr_built', 'yr_renovated']
 
-![ss4]()
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/correlation.png)
 
 Penjelasan Correlation Matrix:
 
@@ -172,7 +172,7 @@ X_test.loc[:, numerical_features] = scaler.transform(X_test[numerical_features])
 
 ### Metrik Evaluasi
 
-![ss4]()
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/hasil.png)
 Penjelasan:
 
 - Boosting ~5.4 ~4.4 Overfitting terlihat → error train & test cukup besar tapi tidak seimbang. Boosting cenderung fit terlalu dalam ke data latih.
