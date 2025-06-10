@@ -147,9 +147,10 @@ Tujuan memperkecil scope variabel:
 ---
 
 ### Handling Outliers
-Plot Sebelum di Handling
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/boxplot.png)
+**Plot Sebelum di Handling**
+
+![outlier](https://github.com/user-attachments/assets/4ed4aae8-48b9-4d1b-82a1-56fddfc5faf2)
 
 Penjelasan BoxPlot:
 
@@ -167,15 +168,15 @@ Penjelasan BoxPlot:
 
 Winsorize adalah teknik statistik yang digunakan untuk mengurangi pengaruh outlier ekstrem dalam data dengan cara mengubah (bukan menghapus) nilai-nilai ekstrem tersebut menjadi nilai yang lebih dekat ke nilai tengah (biasanya batas persentil tertentu).
 
-Plot Setelah di Handling
+**Plot Setelah di Handling**
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/agregasi.png)
+![after-out](https://github.com/user-attachments/assets/aa5af3a3-f0c4-4cfa-a1a2-c7427bb32678)
 
 Setelah berhasil menangani outlier dengan winsorize, data sudah stabil. Variabel price merupakan nilai target jadi tetap dibiarkan meskipun ada outlier karena akan mempengaruhi akurasi model. Model justru perlu belajar bahwa properti tertentu memang bisa mahal.
 
 **Agregasi rata-rata harga berdasarkan kategori luas rumah**
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/agregasi.png)
+![luas rumah](https://github.com/user-attachments/assets/0062aafd-a56c-4184-84e3-e3e659cea0fe)
 
 Berdasarkan hasil visualisasi, berikut adalah beberapa insight yang bisa didapatkan:
 
@@ -234,8 +235,9 @@ grade   jumlah sampel  persentase
 
 #### Numerical Features
 
-![ss4]()
+**Histogram**
 
+![uni-num](https://github.com/user-attachments/assets/4c7c5c77-3fdf-42d2-b883-f76fc169cab4)
 
 ### Multivariate Analysis
 
@@ -244,8 +246,12 @@ grade   jumlah sampel  persentase
 
 #### Categorical Features
 
+![multi cat1](https://github.com/user-attachments/assets/7db736be-8ded-4394-94a4-bf292acf9a72)
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/correlation.png)
+![multi cat2](https://github.com/user-attachments/assets/59ba43ac-d3c4-4c64-a54f-9521a9ac3469)
+
+![multi cat3](https://github.com/user-attachments/assets/8a9cd359-de8f-47bb-aec1-f2b001a07845)
+
 
 **Penjelasan**:
 
@@ -274,7 +280,9 @@ grade   jumlah sampel  persentase
 
 #### Numerical Features
 
-![ss4]()
+**Matrix Correlation**
+
+![multi matrix](https://github.com/user-attachments/assets/3b456eac-014e-4467-bc4e-953e267733dc)
 
 **Penjelasan Matrix Correlation**:
 
@@ -296,6 +304,7 @@ grade   jumlah sampel  persentase
   - yr_built (0.05): Tahun dibangun hampir tidak berpengaruh langsung terhadap harga.
 
 2. Korelasi antarfungsi lain:
+   
 - bathrooms dan sqft_living punya korelasi tinggi (0.75), menunjukkan bahwa rumah lebih besar cenderung memiliki lebih banyak kamar mandi.
 
 - yr_built dan yr_renovated berkorelasi negatif (-0.22), artinya rumah yang lebih lama dibangun cenderung lebih sering direnovasi.
@@ -423,7 +432,8 @@ Penjelasan:
 
 Plot Model
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/hasil.png)
+![evaluasi](https://github.com/user-attachments/assets/35f05e59-23ae-4a24-bcb1-6d854c3ca790)
+
 
 📌 Interpretasi Singkat:
 
