@@ -445,8 +445,7 @@ Penjelasan:
 
 Plot Model
 
-![evaluasi](https://github.com/user-attachments/assets/35f05e59-23ae-4a24-bcb1-6d854c3ca790)
-
+![evaluasi](https://github.com/user-attachments/assets/eb3523a8-dd61-40d0-aaa0-c758a137b6fc)
 
 📌 Interpretasi Singkat:
 
