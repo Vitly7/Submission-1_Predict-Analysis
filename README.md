@@ -488,9 +488,11 @@ Ketiga model yang diuji: KNN, Random Forest, dan Gradient Boosting—memberikan 
 **2. Apakah Problem Statement Terjawab?**
 
 - Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
+  
 ✔️ Terjawab. Data historis seperti sqft_above, jumlah kamar, dan kondisi rumah berhasil digunakan sebagai fitur dalam model prediksi.
 
 - Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
+  
 ✔️ Terjawab. Data historis seperti sqft_above, jumlah kamar, dan kondisi rumah berhasil digunakan sebagai fitur dalam model prediksi.
 
 **3. Apakah Goals Tercapai?**
