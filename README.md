@@ -51,7 +51,7 @@ Dataset diperoleh dari kaggle 'https://www.kaggle.com/datasets/shivachandel/kc-h
 Dataset yang digunakan merupakan data rumah/properti historis dengan atribut:
 - Jumlah baris = 21613 baris
 - Jumlah kolom = 21 kolom
-- Tidak ada missing Value
+- Terdapat missing value pada variabel sqft_above
 - Semua kolom bertipe Numeric (Kolom Date harusnya bertipe datetime)
 
 **Insight**
@@ -126,7 +126,6 @@ Penjelasan 21 Fitur Awal:
 
 ---
 
-# Data Preparation
 
 ## Exploratory Data Analysis (EDA)
 
@@ -134,6 +133,15 @@ Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan 
 
 - Memperkecil scope variabel pada dataset untuk menyederhanakan model dan menghindari overfitting.
 - Menangani Outlier
+- Menangani Missing Value
+
+Terdapat dua baris missing value pada kolom sqft_above.
+
+sqft_above  |  2  |
+
+Code dibawah untuk drop baris pada kolom sqft_above yang memiliki missing value
+
+house = house.dropna(subset=['sqft_above'])
 
 Tujuan memperkecil scope variabel:
 
@@ -163,6 +171,10 @@ Penjelasan BoxPlot:
 - bedrooms Boxplot: Outlier bisa terjadi untuk rumah dengan 33 kamar tidur.
 
 - price Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
+
+---
+
+# Data Preparation
 
 ### Handling Outliers dengan Winsorize
 
@@ -327,12 +339,12 @@ Total of sample in test dataset: 2160
 
 - Standarisasi Numeric
 
-	    bedrooms	bathrooms	sqft_living	 floors	  yr_built	 yr_renovated
-2051	-0.426624	0.558681	-0.320223	0.939736	0.920999	-0.212108
-13753	-0.426624	-0.828544	-0.665972	-0.913332	0.307777	-0.212108
-12884	0.746689	0.905488	2.590171	0.939736	0.852863	-0.212108
-18293	-1.599936	-1.522157	-1.309779	-0.913332	-0.543921	-0.212108
-13667	-0.426624	0.558681	1.408517	0.939736	1.023203	-0.212108
+	bedrooms	bathrooms	sqft_living	floors		yr_built	yr_renovated
+2053	-0.430140	-1.526276	-0.930050	0.008579	-0.750244	-0.210792
+13754	-0.430140	-1.526276	-1.335406	-0.917881	-0.409601	-0.210792
+10970	0.742685	0.551480	-0.047806	0.935040	-0.954630	-0.210792
+15890	1.915510	1.590357	2.591028	0.935040	0.305750	-0.210792
+14117	0.742685	0.551480	0.441005	0.935040	0.748587	-0.210792
 
 
 ---
@@ -352,9 +364,9 @@ Prediksi:
 
 1. Untuk setiap titik data baru (X_test), hitung jarak (biasanya Euclidean) ke semua data training.
 
-2. Pilih k tetangga terdekat (dalam contohmu, k=10).
+2. Pilih k tetangga terdekat (dalam contohmu, k=7).
 
-3. Ambil rata-rata dari nilai target (y_train) dari 10 tetangga tersebut.
+3. Ambil rata-rata dari nilai target (y_train) dari 7 tetangga tersebut.
 
 
 ## Random Forest
@@ -417,10 +429,11 @@ X_test.loc[:, numerical_features] = scaler.transform(X_test[numerical_features])
 
 ## Metrik Evaluasi
 
-          |	    train	      |          test           |
-KNN 	  |  35989759.235004  | 	151999441.774173    |
-RF	      |  12984785.60569	  |     93345579.730781     |
-Boosting  |	 50537556.100101  | 	77722173.587057     |
+			train			test
+KNN		| 35029023.438781	| 44108533.120292
+RF		| 13031555.816459	| 40826373.091298
+Boosting	| 51477538.064462	| 52359369.499679
+
 
 Penjelasan:
 
@@ -437,32 +450,58 @@ Plot Model
 
 📌 Interpretasi Singkat:
 
-- KNN: MSE di data test sangat tinggi, menunjukkan model overfitting (terlalu cocok dengan data training, tapi buruk pada data baru).
+KNN: MSE di data test cukup tinggi, menunjukkan model sedikit overfitting.
 
-- RF dan Boosting: Performa di test masih lebih buruk dari train (umum terjadi), tapi gap-nya tidak separah KNN, artinya model ini lebih stabil dan generalisasi lebih baik.
+RF: MSE Train rendah sedangkan MSE Test sangat tinggi, menunjukkan model sangat overfitting.
+
+Boosting: MSE Train dan Test hampir sama, menunjukkan model yang paling stabil
 
 ✅ Kesimpulan:
 
-- Random Forest dan Boosting lebih cocok digunakan dibanding KNN untuk data ini.
+KNN dan Boosting lebih cocok digunakan dibanding RF untuk data ini.
 
-- Boosting mungkin pilihan terbaik karena MSE-nya paling rendah di test dibanding dua lainnya.
+Boosting mungkin pilihan terbaik karena Model paling stabil.
 
 
 ## Hasil Pengujian Data
 
-      |  y_true	 |   prediksi_KNN |	prediksi_RF	 |   prediksi_Boosting |
-21585 |	270000.0 |	    370486.0  |  305358.0	 |      382753.2       |
+	y_true		prediksi_KNN	prediksi_RF	prediksi_Boosting
+21585	270000.0	307818.9	320719.8	383666.0
+
 
 
 **Evaluasi Akurasi Prediksi:**
 
 Hasil Asli = 270000
-- KNN	370486.0 	         ->	Cukup dekat
-- RandomForest	305358.0	 ->	Paling dekat
-- Boosting	382753.2	     ->	Cukup jauh dari aslinya
+- KNN	307818.9 		 ->	Paling dekat
+- RandomForest	320719.8	 ->	Cukup dekat
+- Boosting	383666.0	 ->	Cukup jauh dari aslinya
 
 ---
 
 ## Kesimpulan:
 
-Meskipun Boosting memiliki performa rata-rata paling stabil (dari MSE test sebelumnya), dalam prediksi individual ini, Random Forest adalah model paling akurat, karena menghasilkan prediksi terdekat terhadap nilai asli. Maka, Random Forest bisa diprioritaskan sebagai model final, terutama jika fokusnya adalah akurasi individual.
+**1. Dampak Model Terhadap Business Understanding**
+   
+Ketiga model yang diuji: KNN, Random Forest, dan Gradient Boosting—memberikan gambaran yang jelas mengenai bagaimana algoritma machine learning dapat membantu dalam memperkirakan harga rumah secara lebih objektif dan berbasis data historis.
+
+**2. Apakah Problem Statement Terjawab?**
+
+- Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
+- 
+✔️ Terjawab. Data historis seperti sqft_above, jumlah kamar, dan kondisi rumah berhasil digunakan sebagai fitur dalam model prediksi.
+
+- Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
+- 
+✔️ Terjawab. Data historis seperti sqft_above, jumlah kamar, dan kondisi rumah berhasil digunakan sebagai fitur dalam model prediksi.
+
+**3. Apakah Goals Tercapai?**
+
+Goal 1:
+
+✔️ Tercapai. Model prediktif telah dibangun berdasarkan fitur-fitur rumah, dengan evaluasi RMSE pada data pelatihan dan pengujian.
+
+Goal 2:
+
+✔️ Tercapai. Performa ketiga model dibandingkan secara objektif. Boosting dipilih sebagai model terbaik karena kemampuan generalisasi-nya paling tinggi, meskipun RMSE-nya tidak paling rendah pada data pelatihan.
+
