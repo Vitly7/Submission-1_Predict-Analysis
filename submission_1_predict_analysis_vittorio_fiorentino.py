@@ -69,8 +69,6 @@ house
 
 Dataset ini diambil dari kaggle yaitu kc_house_data.csv. Dataset berisi informasi mengenai spesifikasi properti beserta harga.
 
-# Data Preparation
-
 ## EDA
 """
 
@@ -78,7 +76,7 @@ house.info()
 
 """**Struktur Data**
 
-- Tidak ada missing Value
+- Terdapat missing Value pada sqft_above dengan jumlah 21611 dari 21613
 - Semua kolom bertipe Numeric (Kolom Date harusnya bertipe datetime)
 
 **Insight**
@@ -151,7 +149,16 @@ Penjelasan 21 Fitur Awal:
 21. sqft_lot15
 - Rata-rata luas tanah dari 15 rumah tetangga terdekat.
 
-### Perkecil Scope Variable Dataset
+### Handling Missing Value
+
+Pada code dibawah menunjukkan ada missing value pada kolom sqft_above
+"""
+
+house.isna().sum()
+
+house = house.dropna(subset=['sqft_above'])
+
+"""### Perkecil Scope Variable Dataset
 
 - Hal ini bertujuan untuk menyederhanakan model dan menghindari overfitting.
 - Beberapa variabel yang dirasa tidak terlalu berpengaruh dengan signifikan akan di drop. Sehingga kita hanya mengambil variabel ( price, bedrooms, bathrooms, sqft_living, floors, waterfront, condition, grade, yr_built, yr_renovated)
@@ -178,12 +185,6 @@ print(bedrooms)
 house.loc[(house['bedrooms']==0)]
 
 """Dari hasil ini bisa dilihat memang anomali karena grade rumah termasuk mayoritas tinggi. Sehingga data ini akan dibuang/drop"""
-
-# Drop baris dengan nilai 'Bedrooms' = 0
-house = house.loc[(house[['bedrooms']]!=0).all(axis=1)]
-
-# Cek ukuran data untuk memastikan baris sudah di-drop
-house.shape
 
 bathrooms = (house.bathrooms == 0).sum()
 print(bathrooms)
@@ -226,7 +227,18 @@ Boxplot: Outlier bisa terjadi untuk rumah dengan 33 kamar tidur.
 5. price
 Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
 
-#### Handling Outliers dengan Winsorize
+# Data Preparation
+
+## Drop nilai 0 pada Bedrooms
+"""
+
+# Drop baris dengan nilai 'Bedrooms' = 0
+house = house.loc[(house[['bedrooms']]!=0).all(axis=1)]
+
+# Cek ukuran data untuk memastikan baris sudah di-drop
+house.shape
+
+"""#### Handling Outliers dengan Winsorize
 
 Winsorize adalah teknik statistik yang digunakan untuk mengurangi pengaruh outlier ekstrem dalam data dengan cara mengubah (bukan menghapus) nilai-nilai ekstrem tersebut menjadi nilai yang lebih dekat ke nilai tengah (biasanya batas persentil tertentu).
 """
@@ -481,12 +493,12 @@ Prediksi:
 
 1. Untuk setiap titik data baru (X_test), hitung jarak (biasanya Euclidean) ke semua data training.
 
-2. Pilih k tetangga terdekat (dalam contohmu, k=10).
+2. Pilih k tetangga terdekat (dalam contohmu, k=7).
 
-3. Ambil rata-rata dari nilai target (y_train) dari 10 tetangga tersebut.
+3. Ambil rata-rata dari nilai target (y_train) dari 7 tetangga tersebut.
 """
 
-knn = KNeighborsRegressor(n_neighbors=8)
+knn = KNeighborsRegressor(n_neighbors=7)
 knn.fit(X_train, y_train)
 
 models.loc['train_mse','knn'] = mean_squared_error(y_pred = knn.predict(X_train), y_true=y_train)
@@ -577,9 +589,9 @@ mse
 
 - Boosting memiliki generalisasi terbaik (perbedaan train-test kecil).
 
-- Random Forest akurat di train, tapi test sedikit lebih buruk.
+- Random Forest overfitting parah (akurat di train, tapi test buruk).
 
-- KNN kurang cocok karena overfitting parah (train bagus, test sangat buruk).
+- KNN kurang cocok karena overfitting sedang (train cukup bagus, test lumayan bagus).
 """
 
 fig, ax = plt.subplots()
@@ -588,15 +600,17 @@ ax.grid(zorder=0)
 
 """📌 Interpretasi Singkat:
 
-KNN: MSE di data test sangat tinggi, menunjukkan model overfitting (terlalu cocok dengan data training, tapi buruk pada data baru).
+KNN: MSE di data test cukup tinggi, menunjukkan model sedikit overfitting.
 
-RF dan Boosting: Performa di test masih lebih buruk dari train (umum terjadi), tapi gap-nya tidak separah KNN, artinya model ini lebih stabil dan generalisasi lebih baik.
+RF: MSE Train rendah sedangkan MSE Test sangat tinggi, menunjukkan model sangat overfitting.
+
+Boosting: MSE Train dan Test hampir sama, menunjukkan model yang paling stabil
 
 ✅ Kesimpulan:
 
-Random Forest dan Boosting lebih cocok digunakan dibanding KNN untuk data ini.
+KNN dan Boosting lebih cocok digunakan dibanding RF untuk data ini.
 
-Boosting mungkin pilihan terbaik karena MSE-nya paling rendah di test dibanding dua lainnya.
+Boosting mungkin pilihan terbaik karena Model paling stabil.
 
 ## Uji Data
 """
@@ -611,9 +625,9 @@ pd.DataFrame(pred_dict)
 """Evaluasi Akurasi Prediksi:
 
 Hasil Asli = 270000
-- KNN	370486.0 	 ->	Cukup dekat
-- RandomForest	305358.0	 ->	Paling dekat
-- Boosting	382753.2	 ->	Cukup jauh dari aslinya
+- KNN	307818.9 	 ->	Paling dekat
+- RandomForest	320719.8	 ->	Cukup dekat
+- Boosting	383666.0	 ->	Cukup jauh dari aslinya
 
 **Kesimpulan:**
 
