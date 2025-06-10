@@ -59,6 +59,14 @@ Dataset yang digunakan merupakan data rumah/properti historis dengan atribut:
 - Kita akan berfokus pada beberapa kolom variabel saja, sehingga variable yang tidak perlu akan di drop.
 
 
+
+---
+
+
+## Exploratory Data Analysis (EDA)
+
+Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan analisis statistik deskriptif terhadap fitur-fitur numerik.
+
 Penjelasan 21 Fitur Awal:
 1. id
 - ID unik untuk setiap properti. Digunakan sebagai identifikasi individual dalam dataset.
@@ -124,35 +132,19 @@ Penjelasan 21 Fitur Awal:
 21. sqft_lot15
 - Rata-rata luas tanah dari 15 rumah tetangga terdekat.
 
----
 
+**Struktur Data**
 
-## Exploratory Data Analysis (EDA)
+- Terdapat missing Value pada sqft_above dengan jumlah 21611 dari 21613
+- Semua kolom bertipe Numeric (Kolom Date harusnya bertipe datetime)
 
-Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan analisis statistik deskriptif terhadap fitur-fitur numerik.
+### Handling Missing Value
 
-- Memperkecil scope variabel pada dataset untuk menyederhanakan model dan menghindari overfitting.
-- Menangani Outlier
-- Menangani Missing Value
+Code dibawah untuk menujukkan missing value pada semua kolom.
 
-Terdapat dua baris missing value pada kolom sqft_above.
+house.isna().sum()
 
-sqft_above  |  2  |
-
-Code dibawah untuk drop baris pada kolom sqft_above yang memiliki missing value
-
-house = house.dropna(subset=['sqft_above'])
-
-Tujuan memperkecil scope variabel:
-
-- Hal ini bertujuan untuk menyederhanakan model dan menghindari overfitting.
-- Beberapa variabel yang dirasa tidak terlalu berpengaruh dengan signifikan akan di drop. Sehingga kita hanya mengambil variabel ( price, bedrooms, bathrooms, sqft_living, floors, waterfront, condition, grade, yr_built, yr_renovated)
-
-**Insight:**
-
-- Kolom bedrooms dan bathrooms memiliki data bernilai 0. Sedikit ambigu jika rumah tidak punya bedrooms dan bathrooms. Tapi bisa saja memang ada. Kita berspekulasi bahwa nilai 0 itu tidak mungkin, sehingga akan kita buang.
-
----
+Output missing value: | sqft_above   |   2  |
 
 ### Handling Outliers
 
@@ -172,9 +164,49 @@ Penjelasan BoxPlot:
 
 - price Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
 
+**Insight**
+
+Kita akan berfokus pada beberapa kolom variabel saja, sehingga variable yang tidak perlu akan di drop.
+
+- Memperkecil scope variabel pada dataset untuk menyederhanakan model dan menghindari overfitting.
+- Menangani Outlier
+- Menangani Missing Value
+
+Terdapat dua baris missing value pada kolom sqft_above.
+
+sqft_above  |  2  |
+
+Code dibawah untuk drop baris pada kolom sqft_above yang memiliki missing value.
+
+house = house.dropna(subset=['sqft_above'])
+
+Missing value di drop karena hanya dua baris data dari 21613, sehingga tidak akan berpengaruh terhadap dataset.
+
 ---
 
 # Data Preparation
+
+### Drop Missing Value pada sqft_above
+
+Code dibawah untuk drop missing value pada sqft_above
+
+house = house.dropna(subset=['sqft_above'])
+     
+
+### Tujuan memperkecil scope variabel:
+
+- Hal ini bertujuan untuk menyederhanakan model dan menghindari overfitting.
+- Beberapa variabel yang dirasa tidak terlalu berpengaruh dengan signifikan akan di drop. Sehingga kita hanya mengambil variabel ( price, bedrooms, bathrooms, sqft_living, floors, waterfront, condition, grade, yr_built, yr_renovated)
+
+**Insight:**
+
+- Kolom bedrooms dan bathrooms memiliki data bernilai 0. Sedikit ambigu jika rumah tidak punya bedrooms dan bathrooms. Tapi bisa saja memang ada. Kita berspekulasi bahwa nilai 0 itu tidak mungkin, sehingga akan kita buang.
+
+### Handling Nilai 0 Pada Bedroom dan Bathrooms
+
+- Bedrooms yang bernilai 0 memiliki 13 baris. Dari hasil ini bisa dilihat memang anomali karena grade rumah termasuk mayoritas tinggi. Sehingga data ini akan dibuang/drop.
+- Bathrooms yang bernilai 0 memiliki 3 baris. Dari hasil ini bisa dilihat meskipun bathrooms, tetapi masih ada bedrooms. Jika dilihat dari yr_built kisaran 1948-1966 yang dimana termasuk sudah tua dengan grade yang normal. Sehingga masih termasuk normal dan tetap digunakan.
+
 
 ### Handling Outliers dengan Winsorize
 
