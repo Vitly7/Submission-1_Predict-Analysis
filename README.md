@@ -3,7 +3,7 @@
 
 ---
 
-## Domain Proyek
+# Domain Proyek
 
 Pergerakan harga properti atau rumah merupakan aspek penting dalam dunia real estat, baik bagi pembeli, penjual, maupun investor. Dalam era digital dan data-driven saat ini, prediksi harga rumah berbasis data historis menjadi pendekatan yang sangat diminati karena mampu memberikan wawasan yang lebih akurat dalam pengambilan keputusan jual beli atau investasi.
 
@@ -12,21 +12,21 @@ Dengan meningkatnya ketersediaan data properti (seperti ukuran rumah, lokasi, ju
 
 ---
 
-## Business Understanding
+# Business Understanding
 
-### Problem Statements
+## Problem Statements
 
 1. Bagaimana memprediksi harga rumah berdasarkan data historis dan karakteristik rumah?
 
 2. Model machine learning mana yang memberikan performa terbaik dalam memprediksi harga rumah?
 
-### Goals
+## Goals
 
 1. Menghasilkan model prediktif yang mampu memperkirakan harga rumah berdasarkan fitur-fitur seperti luas bangunan, jumlah kamar, lokasi, kondisi, dan lainnya.
 
 2. Membandingkan performa beberapa algoritma machine learning untuk menentukan model terbaik dalam memprediksi harga rumah.
 
-### Solution Statement
+## Solution Statement
 
 Untuk mencapai tujuan di atas, digunakan tiga algoritma machine learning, yaitu:
 - K-Nearest Neighbors (KNN)
@@ -46,24 +46,108 @@ Evaluasi model dilakukan menggunakan Root Mean Squared Error (RMSE) pada data pe
 
 ---
 
-## Data Understanding
-Dataset diperoleh dari kaggle/Github (Sudah disimpan ke gdrive)= 'https://drive.google.com/uc?id=1JnHqcZDejRC0Bdei0VlpeiHyf9PvG3cz'
+# Data Understanding
+Dataset diperoleh dari kaggle 'https://www.kaggle.com/datasets/shivachandel/kc-house-data'
 Dataset yang digunakan merupakan data rumah/properti historis dengan atribut:
 - Jumlah baris = 21613 baris
 - Jumlah kolom = 21 kolom
 - Tidak ada missing Value
 - Semua kolom bertipe Numeric (Kolom Date harusnya bertipe datetime)
 
+**Insight**
+
+- Kita akan berfokus pada beberapa kolom variabel saja, sehingga variable yang tidak perlu akan di drop.
+
+
+Penjelasan 21 Fitur Awal:
+1. id
+- ID unik untuk setiap properti. Digunakan sebagai identifikasi individual dalam dataset.
+
+2. date
+- Tanggal penjualan rumah. Format umum: YYYYMMDDT000000.
+
+3. price
+- Harga jual rumah (dalam USD). Ini adalah variabel target jika ingin melakukan prediksi harga.
+
+4. bedrooms
+- Jumlah kamar tidur di rumah.
+
+5. bathrooms
+- Jumlah kamar mandi (dinyatakan dalam angka desimal; misal 1.5 berarti 1 kamar mandi penuh dan 1 kamar mandi kecil).
+
+6. sqft_living
+- Luas area yang dapat dihuni (livable) dalam satuan kaki persegi.
+
+7. sqft_lot
+- Luas total tanah properti (termasuk bangunan dan halaman), dalam kaki persegi.
+
+8. floors
+- Jumlah lantai bangunan rumah.
+
+9. waterfront
+- Indikator apakah rumah memiliki pemandangan langsung ke air (danau, laut, dll).
+-  Nilai: 0 (tidak), 1 (ya).
+
+10. view
+- Indeks visualisasi rumah terhadap pemandangan luar. Skala 0–4; semakin tinggi, semakin bagus pandangan rumah.
+
+11. condition
+- Kondisi umum rumah (bukan renovasi). Skala 1–5; 1 paling buruk, 5 sangat baik.
+
+12. grade
+- Penilaian kualitas konstruksi dan desain rumah oleh King County (bukan kondisi). Skala 1–13.
+
+13. sqft_above
+- Luas area bangunan di atas tanah (tidak termasuk basement), dalam kaki persegi.
+
+14. sqft_basement
+- Luas area basement (bawah tanah), dalam kaki persegi.
+
+15. yr_built
+- Tahun rumah pertama kali dibangun.
+
+16. yr_renovated
+- Tahun terakhir rumah direnovasi. Jika tidak pernah direnovasi, bernilai 0.
+
+17. zipcode
+- Kode pos wilayah rumah berada.
+
+18. lat
+- Latitude (garis lintang) lokasi properti.
+
+19. long
+- Longitude (garis bujur) lokasi properti.
+
+20. sqft_living15
+- Rata-rata luas area livable dari 15 rumah tetangga terdekat.
+
+21. sqft_lot15
+- Rata-rata luas tanah dari 15 rumah tetangga terdekat.
+
 ---
 
-### Exploratory Data Analysis (EDA)
+# Data Preparation
+
+## Exploratory Data Analysis (EDA)
 
 Untuk memahami karakteristik dasar dari dataset rumah yang digunakan, dilakukan analisis statistik deskriptif terhadap fitur-fitur numerik.
 
 - Memperkecil scope variabel pada dataset untuk menyederhanakan model dan menghindari overfitting.
 - Menangani Outlier
 
-**Handling Outliers**
+Tujuan memperkecil scope variabel:
+
+- Hal ini bertujuan untuk menyederhanakan model dan menghindari overfitting.
+- Beberapa variabel yang dirasa tidak terlalu berpengaruh dengan signifikan akan di drop. Sehingga kita hanya mengambil variabel ( price, bedrooms, bathrooms, sqft_living, floors, waterfront, condition, grade, yr_built, yr_renovated)
+
+**Insight:**
+
+- Kolom bedrooms dan bathrooms memiliki data bernilai 0. Sedikit ambigu jika rumah tidak punya bedrooms dan bathrooms. Tapi bisa saja memang ada. Kita berspekulasi bahwa nilai 0 itu tidak mungkin, sehingga akan kita buang.
+
+---
+
+### Handling Outliers
+Plot Sebelum di Handling
 
 ![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/boxplot.png)
 
@@ -79,6 +163,15 @@ Penjelasan BoxPlot:
 
 - price Boxplot: Harga memang ada outliers. Mungkin karena ada rumah mahal/mansion
 
+### Handling Outliers dengan Winsorize
+
+Winsorize adalah teknik statistik yang digunakan untuk mengurangi pengaruh outlier ekstrem dalam data dengan cara mengubah (bukan menghapus) nilai-nilai ekstrem tersebut menjadi nilai yang lebih dekat ke nilai tengah (biasanya batas persentil tertentu).
+
+Plot Setelah di Handling
+
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/agregasi.png)
+
+Setelah berhasil menangani outlier dengan winsorize, data sudah stabil. Variabel price merupakan nilai target jadi tetap dibiarkan meskipun ada outlier karena akan mempengaruhi akurasi model. Model justru perlu belajar bahwa properti tertentu memang bisa mahal.
 
 **Agregasi rata-rata harga berdasarkan kategori luas rumah**
 
@@ -94,38 +187,127 @@ Kategori dengan Harga Jual Tertinggi: Range 4001+
 
 Tren Peningkatan Harga Jual: Terlihat jelas ada tren peningkatan harga jual dari kiri ke kanan.
 
-#### Multivariate Analysis
+---
 
-**Variabel Fitur Numerik yang dipakai untuk analisis**
+### Univariate Analysis
 
-Fitur numerik: ['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors', 'waterfront', 'condition', 'grade', 'yr_built', 'yr_renovated']
+- Analisis Satu Variabel
+- Tidak mempelajari hubungan dengan variabel lain
+
+numerical_features = ['price', 'bathrooms', 'bedrooms', 'floors', 'sqft_living', 'yr_built', 'yr_renovated']
+categorical_features = ['waterfront', 'condition', 'grade']
+
+#### Categorical Features
+
+Distribusi untuk fitur: waterfront
+            
+waterfront   jumlah sampel  persentase                        
+0                   21437        99.2
+1                     163         0.8
+
+
+Distribusi untuk fitur: condition
+           
+condition   jumlah sampel  persentase                        
+3                  14021        64.9
+4                   5678        26.3
+5                   1701         7.9
+2                    171         0.8
+1                     29         0.1
+
+
+Distribusi untuk fitur: grade
+       
+grade   jumlah sampel  persentase                        
+7               8975        41.6
+8               6065        28.1
+9               2615        12.1
+6               2038         9.4
+10              1134         5.2
+11               399         1.8
+5                242         1.1
+12                89         0.4
+4                 27         0.1
+13                13         0.1
+3                  3         0.0
+
+
+#### Numerical Features
+
+![ss4]()
+
+
+### Multivariate Analysis
+
+- Analisis Banyak Variabel
+- Digunakan untuk menemukan hubungan, korelasi, atau pengaruh antar variabel.
+
+#### Categorical Features
+
 
 ![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/correlation.png)
 
-Penjelasan Correlation Matrix:
+**Penjelasan**:
 
-🔺 grade (0.67) dan sqft_living (0.65) punya korelasi paling kuat dengan price → makin tinggi kualitas & luas rumah, makin mahal harganya.
+- Grafik menunjukkan bahwa rumah yang memiliki waterfront (dekat/punya akses ke air, ditandai dengan 1) memiliki rata-rata harga jauh lebih tinggi dibandingkan rumah yang tidak memiliki waterfront (ditandai dengan 0). Artinya, faktor lokasi terhadap air berpengaruh signifikan terhadap harga properti.
 
-🛁 bathrooms (0.48) dan 🛏️ bedrooms (0.32) juga cukup berpengaruh terhadap price, tapi tidak sekuat grade.
+- Semakin tinggi nilai condition, rata-rata harga ikut naik:
 
-🚫 condition (0.04) dan yr_built (0.05) hampir tidak berkorelasi dengan price → usia atau kondisi rumah tidak terlalu memengaruhi harga.
+  - Condition 1–2: sekitar 330 ribu.
 
-💡 Korelasi antar fitur juga terlihat kuat antara:
+  - Condition 3–4: melonjak ke kisaran 520–540 ribu.
 
-- bathrooms & sqft_living (0.75)
+  - Condition 5: tertinggi, ±610 ribu.
 
-- grade & sqft_living (0.76)
+    Jadi, kondisi yang lebih baik berasosiasi dengan harga rata-rata yang lebih tinggi, dengan lonjakan paling besar terjadi setelah kategori 2.
+
+- Grafik menunjukkan bahwa semakin tinggi grade, rata-rata harga (price) meningkat tajam:
+
+  - Grade 3–8: harga relatif stabil di bawah 700 ribu.
+
+  - Grade 9–11: mulai naik signifikan, tembus lebih dari 1 juta.
+
+  - Grade 12–13: lonjakan tajam, hingga lebih dari 3 juta di grade 13.
+
+    Kesimpulan: grade berpengaruh kuat terhadap harga, terutama di grade tinggi.
+
+
+#### Numerical Features
+
+![ss4]()
+
+**Penjelasan Matrix Correlation**:
+
+1.  Korelasi terhadap price:
+- Tinggi:
+
+  - sqft_living (0.65): Semakin besar luas rumah, semakin tinggi harganya.
+
+  - bathrooms (0.48): Lebih banyak kamar mandi cenderung menaikkan harga.
+
+- Sedang:
+
+  - bedrooms (0.32), floors (0.26)
+
+- Rendah:
+
+  - yr_renovated (0.13)
+
+  - yr_built (0.05): Tahun dibangun hampir tidak berpengaruh langsung terhadap harga.
+
+2. Korelasi antarfungsi lain:
+- bathrooms dan sqft_living punya korelasi tinggi (0.75), menunjukkan bahwa rumah lebih besar cenderung memiliki lebih banyak kamar mandi.
+
+- yr_built dan yr_renovated berkorelasi negatif (-0.22), artinya rumah yang lebih lama dibangun cenderung lebih sering direnovasi.
+
+Kesimpulan:
+
+Fitur paling relevan terhadap price adalah sqft_living, lalu bathrooms. Fitur seperti yr_built atau yr_renovated punya pengaruh sangat kecil terhadap harga berdasarkan korelasi linier.
+
 
 ---
 
-## Data Preparation
-
-- Reduksi dimensi dengan PCA
-
-Reduksi dimensi berfungsi untuk mengurangi dimensi data, meningkatkan performa model, mempermudah visualisasi
-Hasil reduksi ratio 
-array([0.983, 0.017])
-
+## Train Test Split
 
 - Train Test Split: Membagi data menjadi data latih dan data uji dengan rasio 90:10
 Total of sample in whole dataset: 21600
@@ -136,31 +318,85 @@ Total of sample in test dataset: 2160
 
 - Standarisasi Numeric
 
-            bedrooms	bathrooms	    sqft_living	        floors	       yr_built	       grade        yr_renovated
-count   1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04	1.728000e+04
-mean	4.070818e-17	-6.517420e-17	-1.798972e-16	7.360367e-17	2.872599e-15	5.304399e-17	5.345518e-18
-std	    1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00	1.000029e+00
-min	    -2.183627e+00	-2.036927e+00	-2.007164e+00	-9.080882e-01	-2.419629e+00	-3.960760e+00	-2.147758e-01
-25% 	-4.251651e-01	-8.240421e-01	-7.578735e-01	-9.080882e-01	-6.788543e-01	-5.557311e-01	-2.147758e-01
-50%	    -4.251651e-01	2.155739e-01	-1.748714e-01	1.713374e-02	1.403338e-01	-5.557311e-01	-2.147758e-01
-75%	    7.471426e-01	5.621126e-01	5.866007e-01	9.423557e-01	8.912561e-01	2.955262e-01	-2.147758e-01
-max	    2.505604e+00	2.121537e+00	2.586804e+00	3.718022e+00	1.505647e+00	4.551812e+00	4.701859e+00
+	    bedrooms	bathrooms	sqft_living	 floors	  yr_built	 yr_renovated
+2051	-0.426624	0.558681	-0.320223	0.939736	0.920999	-0.212108
+13753	-0.426624	-0.828544	-0.665972	-0.913332	0.307777	-0.212108
+12884	0.746689	0.905488	2.590171	0.939736	0.852863	-0.212108
+18293	-1.599936	-1.522157	-1.309779	-0.913332	-0.543921	-0.212108
+13667	-0.426624	0.558681	1.408517	0.939736	1.023203	-0.212108
+
 
 ---
 
-## Modeling
+# Modeling 
 
 Tiga model machine learning yang digunakan:
 - **KNN**: Algoritma sederhana berbasis tetangga terdekat
 - **Random Forest**: Model ensambel berbasis pohon keputusan
 - **Gradient Boosting**: Model boosting yang menggabungkan banyak pohon lemah secara iteratif
 
-| Model     |      Train         |       Test       |
-|-----------|--------------------|------------------|
-| KNN       | 39373913.354123	 | 48532713.700962  |
-| RF        | 12473741.304761	 | 42857536.442852  |  
-| Boosting  | 52643899.971604	 | 57222556.944881  |
+## KNN
 
+Lazy Learning: Tidak melakukan proses pelatihan dalam arti tradisional. Hanya menyimpan data training.
+
+Prediksi:
+
+1. Untuk setiap titik data baru (X_test), hitung jarak (biasanya Euclidean) ke semua data training.
+
+2. Pilih k tetangga terdekat (dalam contohmu, k=10).
+
+3. Ambil rata-rata dari nilai target (y_train) dari 10 tetangga tersebut.
+
+
+## Random Forest
+
+Cara kerja:
+
+1. Buat banyak pohon keputusan (di sini 50 pohon).
+
+2. Setiap pohon:
+
+  - Dibuat dari sampel acak dengan pengembalian dari data training (bootstrap sampling).
+
+  - Saat membelah node, hanya subset acak dari fitur yang dipertimbangkan.
+
+3. Setiap pohon membuat prediksi, lalu rata-ratanya diambil (untuk regresi).
+
+Parameter penting:
+
+- n_estimators=50: jumlah pohon dalam hutan.
+
+- max_depth=16: membatasi kedalaman pohon → mencegah overfitting.
+
+- n_jobs=-1: gunakan semua core CPU untuk training (paralel).
+
+## Metode Adaptive Boosting
+
+Cara kerja (regresi):
+
+1. Model pertama (weak learner) dilatih pada data asli.
+
+2. Residual (kesalahan prediksi) dihitung.
+
+3. Model selanjutnya dilatih untuk memprediksi residual tersebut, bukan nilai aslinya.
+
+4. Proses berulang: setiap model mencoba memperbaiki kesalahan model sebelumnya.
+
+5. Prediksi akhir adalah gabungan (weighted sum) dari semua model.
+
+Spesifik pada kode:
+
+1. AdaBoostRegressor menggunakan DecisionTreeRegressor depth=1 sebagai default weak learner.
+
+2. learning_rate=0.05: mengatur kontribusi tiap model terhadap prediksi akhir.
+
+3. random_state=55: memastikan hasil yang reprodusibel.
+
+
+## Scaling Pada Data Uji
+Fungsi scaling (normalisasi atau standarisasi) pada data uji (test set) adalah:
+
+Menjadikan skala data uji konsisten dengan data latih, agar model dapat membuat prediksi yang akurat.
 
 **Lakukan scaling terhadap fitur numerik pada X_test sehingga memiliki rata-rata=0 dan varians=1**
 
@@ -168,37 +404,55 @@ X_test.loc[:, numerical_features] = scaler.transform(X_test[numerical_features])
 
 ---
 
-## Evaluation
+# Evaluation
 
-### Metrik Evaluasi
+## Metrik Evaluasi
 
-![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/hasil.png)
+          |	    train	      |          test           |
+KNN 	  |  35989759.235004  | 	151999441.774173    |
+RF	      |  12984785.60569	  |     93345579.730781     |
+Boosting  |	 50537556.100101  | 	77722173.587057     |
+
 Penjelasan:
 
-- Boosting ~5.4 ~4.4 Overfitting terlihat → error train & test cukup besar tapi tidak seimbang. Boosting cenderung fit terlalu dalam ke data latih.
-- KNN ~0.26 ~0.22 Cukup stabil → train dan test error mirip → model tidak overfit atau underfit.
-- RF ~0.04 ~0.2 Sangat baik → performa sangat bagus di train dan cukup baik di test. Hampir tidak overfit.
+- Boosting memiliki generalisasi terbaik (perbedaan train-test kecil).
 
-### Hasil Pengujian Data
+- Random Forest akurat di train, tapi test sedikit lebih buruk.
 
-|    y_true     | prediksi_KNN   | prediksi_RF  | prediksi_Boosting |
-| 	            |                |              |                   |   
-|   270000.0    |   318473.2     |   320560.6   |    382082.5       |
+- KNN kurang cocok karena overfitting parah (train bagus, test sangat buruk).
+
+Plot Model
+
+![ss4](https://github.com/Vitly7/Submission-1_Predict-Analysis/blob/52f678e28e7d4acf54b01c077dd0a8779dccae23/gambar/hasil.png)
+
+📌 Interpretasi Singkat:
+
+- KNN: MSE di data test sangat tinggi, menunjukkan model overfitting (terlalu cocok dengan data training, tapi buruk pada data baru).
+
+- RF dan Boosting: Performa di test masih lebih buruk dari train (umum terjadi), tapi gap-nya tidak separah KNN, artinya model ini lebih stabil dan generalisasi lebih baik.
+
+✅ Kesimpulan:
+
+- Random Forest dan Boosting lebih cocok digunakan dibanding KNN untuk data ini.
+
+- Boosting mungkin pilihan terbaik karena MSE-nya paling rendah di test dibanding dua lainnya.
+
+
+## Hasil Pengujian Data
+
+      |  y_true	 |   prediksi_KNN |	prediksi_RF	 |   prediksi_Boosting |
+21585 |	270000.0 |	    370486.0  |  305358.0	 |      382753.2       |
 
 
 **Evaluasi Akurasi Prediksi:**
 
 Hasil Asli = 270000
-
-- KNN 334973 -> Cukup dekat
-- RandomForest 324502.9 -> Paling dekat
-- Boosting 383839.0 -> Cukup jauh dari aslinya
+- KNN	370486.0 	         ->	Cukup dekat
+- RandomForest	305358.0	 ->	Paling dekat
+- Boosting	382753.2	     ->	Cukup jauh dari aslinya
 
 ---
 
-### Kesimpulan:
-- Semua model cukup baik kali ini, terutama Random Forest yang prediksinya hampir identik dengan nilai sebenarnya.
+## Kesimpulan:
 
-- Model Boosting cenderung underestimate (meremehkan nilai).
-
-- KNN juga cukup akurat, hanya sedikit lebih tinggi.
+Meskipun Boosting memiliki performa rata-rata paling stabil (dari MSE test sebelumnya), dalam prediksi individual ini, Random Forest adalah model paling akurat, karena menghasilkan prediksi terdekat terhadap nilai asli. Maka, Random Forest bisa diprioritaskan sebagai model final, terutama jika fokusnya adalah akurasi individual.
