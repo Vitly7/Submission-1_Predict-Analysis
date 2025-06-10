@@ -47,7 +47,9 @@ Evaluasi model dilakukan menggunakan Root Mean Squared Error (RMSE) pada data pe
 ---
 
 # Data Understanding
+
 Dataset diperoleh dari kaggle 'https://www.kaggle.com/datasets/shivachandel/kc-house-data'
+
 Dataset yang digunakan merupakan data rumah/properti historis dengan atribut:
 - Jumlah baris = 21613 baris
 - Jumlah kolom = 21 kolom
